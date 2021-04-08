@@ -1,5 +1,5 @@
 /**
- * Autobind
+ * Autobind -
  * Decorator function that automatically handles binding of this
  * @function
  * @param {any} target - Either constructor function of the class for a static member, or prototype of the class for an instance member
@@ -24,7 +24,7 @@ function Autobind(
 }
 
 /**
- * ProjectInput
+ * ProjectInput -
  * Creates a new ProjectInput
  * @class
  */
@@ -64,6 +64,38 @@ class ProjectInput {
   }
 
   /**
+   * clearInputs -
+   * Reset input values
+   */
+  private clearInputs() {
+    this.titleInputElement.value = "";
+    this.descriptionInputElement.value = "";
+    this.peopleInputElement.value = "";
+  }
+
+  /**
+   * gatherUserInput
+   * @method
+   * @returns {tuple | void} Returns tuple of [title, description, people] or void
+   */
+  private gatherUserInput(): [string, string, number] | void {
+    const enteredTitle = this.titleInputElement.value;
+    const enteredDescription = this.descriptionInputElement.value;
+    const enteredPeople = this.peopleInputElement.value;
+
+    if (
+      enteredTitle.trim().length === 0 ||
+      enteredDescription.trim().length === 0 ||
+      enteredPeople.trim().length === 0
+    ) {
+      alert("Invalid input, please try again!");
+      return;
+    } else {
+      return [enteredTitle, enteredDescription, +enteredPeople];
+    }
+  }
+
+  /**
    * submitHandler
    * Handles submit event for form element
    * @param event
@@ -71,7 +103,12 @@ class ProjectInput {
   @Autobind
   private submitHandler(event: Event) {
     event.preventDefault();
-    console.log(this.titleInputElement.value);
+    const userInput = this.gatherUserInput();
+    if (Array.isArray(userInput)) {
+      const [title, desc, people] = userInput;
+      console.log(title, desc, people);
+      this.clearInputs();
+    }
   }
 
   /**
