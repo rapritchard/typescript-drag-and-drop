@@ -1,5 +1,4 @@
 /**
- * Autobind -
  * Decorator function that automatically handles binding of this
  * @function
  * @param {any} target - Either constructor function of the class for a static member, or prototype of the class for an instance member
@@ -23,8 +22,62 @@ function Autobind(
   return adjDescriptor;
 }
 
+interface Validatable {
+  value: string | number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+}
+
 /**
- * ProjectInput -
+ * Determines if input is valid or not
+ * @function
+ * @param {Object} validatableInput - Input to be validated.
+ * @param {string|number} validatableInput.value - Value of input.
+ * @param {boolean=} validatableInput.required - Determines if value is required
+ * @param {number} validatableInput.minLength - Minimum length of string validatableInput.value
+ * @param {number} validatableInput.maxLength - Maximum length of string validatableInput.value
+ * @param {number} validatableInput.min - Minimum length of number validatableInput.value
+ * @param {number} validatableInput.max - Maximum length of number validatableInput.value
+ * @returns {boolean} True for is valid, false for not valid
+ */
+function validate(validatableInput: Validatable) {
+  let isValid = true;
+  if (validatableInput.required) {
+    isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+  }
+  if (
+    validatableInput.minLength != null &&
+    typeof validatableInput.value === "string"
+  ) {
+    isValid =
+      isValid && validatableInput.value.length >= validatableInput.minLength;
+  }
+  if (
+    validatableInput.maxLength != null &&
+    typeof validatableInput.value === "string"
+  ) {
+    isValid =
+      isValid && validatableInput.value.length <= validatableInput.maxLength;
+  }
+  if (
+    validatableInput.min != null &&
+    typeof validatableInput.value === "number"
+  ) {
+    isValid = isValid && validatableInput.value >= validatableInput.min;
+  }
+  if (
+    validatableInput.max != null &&
+    typeof validatableInput.value === "number"
+  ) {
+    isValid = isValid && validatableInput.value <= validatableInput.max;
+  }
+  return isValid;
+}
+
+/**
  * Creates a new ProjectInput
  * @class
  */
@@ -64,7 +117,6 @@ class ProjectInput {
   }
 
   /**
-   * clearInputs -
    * Reset input values
    */
   private clearInputs() {
@@ -74,19 +126,34 @@ class ProjectInput {
   }
 
   /**
-   * gatherUserInput
    * @method
-   * @returns {tuple | void} Returns tuple of [title, description, people] or void
+   * @returns {[string, string, number] | void} Returns tuple of [title, description, people] or void
    */
   private gatherUserInput(): [string, string, number] | void {
     const enteredTitle = this.titleInputElement.value;
     const enteredDescription = this.descriptionInputElement.value;
     const enteredPeople = this.peopleInputElement.value;
 
+    const titleValidatable: Validatable = {
+      value: enteredTitle,
+      required: true,
+    };
+    const descriptionValidatable: Validatable = {
+      value: enteredDescription,
+      required: true,
+      minLength: 5,
+    };
+    const peopleValidatable: Validatable = {
+      value: +enteredPeople,
+      required: true,
+      min: 1,
+      max: 5,
+    };
+
     if (
-      enteredTitle.trim().length === 0 ||
-      enteredDescription.trim().length === 0 ||
-      enteredPeople.trim().length === 0
+      !validate(titleValidatable) ||
+      !validate(descriptionValidatable) ||
+      !validate(peopleValidatable)
     ) {
       alert("Invalid input, please try again!");
       return;
@@ -96,7 +163,6 @@ class ProjectInput {
   }
 
   /**
-   * submitHandler
    * Handles submit event for form element
    * @param event
    */
@@ -112,7 +178,6 @@ class ProjectInput {
   }
 
   /**
-   * configure
    * configures event listener for form submission
    */
   private configure() {
@@ -120,7 +185,6 @@ class ProjectInput {
   }
 
   /**
-   * attach
    * Inserts template HTML to hostElement
    */
   private attach() {
