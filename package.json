@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/rapritchard/typescript-drag-and-drop#readme",
   "devDependencies": {
-    "lite-server": "^2.5.4"
+    "lite-server": "^2.5.4",
+    "typescript": "^4.2.4"
   }
 }
