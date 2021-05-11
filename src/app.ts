@@ -6,7 +6,7 @@
  * @param {PropertyDescriptor} descriptor - Property Descriptor for the member (Undefined if script target is < ES5)
  * @return {PropertyDescriptor} Adjusted descriptor (Return value is ignored if script target is < ES5)
  */
-function Autobind(
+function autobind(
   _target: any,
   _methodName: string,
   descriptor: PropertyDescriptor
@@ -22,11 +22,28 @@ function Autobind(
   return adjDescriptor;
 }
 
+interface Draggable {
+  dragStartHandler(event: DragEvent): void;
+  dragEndHandler(event: DragEvent): void;
+}
+
+interface DragTarget {
+  dragOverHandler(event: DragEvent): void;
+  dropHandler(event: DragEvent): void;
+  dragLeaveHandler(event: DragEvent): void;
+}
+
+/**
+ * Project type enum
+ */
 enum ProjectStatus {
   Active,
   Finished,
 }
 
+/**
+ * Project property definition
+ */
 class Project {
   constructor(
     public id: string,
@@ -193,8 +210,18 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
  * Creates a new ProjectItem
  * @class
  */
-class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+class ProjectItem
+  extends Component<HTMLUListElement, HTMLLIElement>
+  implements Draggable {
   private project: Project;
+
+  get persons() {
+    if (this.project.people === 1) {
+      return "1 person";
+    } else {
+      return `${this.project.people} persons`;
+    }
+  }
 
   constructor(hostId: string, project: Project) {
     super("single-project", hostId, false, project.id);
@@ -204,13 +231,23 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
     this.renderContent();
   }
 
-  configure() {}
+  @autobind
+  dragStartHandler(event: DragEvent) {
+    console.log(event);
+  }
+
+  dragEndHandler(_: DragEvent) {
+    console.log("DragEnd");
+  }
+
+  configure() {
+    this.element.addEventListener("dragstart", this.dragStartHandler);
+    this.element.addEventListener("dragend", this.dragEndHandler);
+  }
 
   renderContent() {
     this.element.querySelector("h2")!.textContent = this.project.title;
-    this.element.querySelector(
-      "h3"
-    )!.textContent = this.project.people.toString();
+    this.element.querySelector("h3")!.textContent = this.persons + " assigned";
     this.element.querySelector("p")!.textContent = this.project.description;
   }
 }
@@ -348,7 +385,7 @@ class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
    * Handles submit event for form element
    * @param event
    */
-  @Autobind
+  @autobind
   private submitHandler(event: Event) {
     event.preventDefault();
     const userInput = this.gatherUserInput();
